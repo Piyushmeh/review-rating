@@ -11,13 +11,17 @@ const Home = () => {
   const [city, setCity] = useState("Indore");
   const [sort, setSort] = useState("name");
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchCompanies = async () => {
     try {
+      setLoading(true);
       const { data } = await API.get(`/companies?search=${search}&sort=${sort}&city=${city}`);
       setCompanies(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -26,6 +30,17 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar search={search} setSearch={setSearch} />
+
+      {/* Loading Popup */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/40 flex flex-col justify-center items-center z-50">
+          <div className="bg-white rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-xl">
+            <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-600 font-medium">Loading, please wait...</p>
+            <p className="text-gray-400 text-xs">Server is waking up, this may take a moment</p>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* City Filter Row */}
@@ -81,9 +96,11 @@ const Home = () => {
             <CompanyCard key={company._id} company={company} />
           ))
         ) : (
-          <div className="bg-white rounded-xl p-10 text-center text-gray-400 text-lg">
-            No Companies Found
-          </div>
+          !loading && (
+            <div className="bg-white rounded-xl p-10 text-center text-gray-400 text-lg">
+              No Companies Found
+            </div>
+          )
         )}
       </div>
 
